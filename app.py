@@ -20,6 +20,6 @@ def create_tables():
 
 api.add_resource(Tasks, "/tasks")
 api.add_resource(Task, "/task/<int:task_id>")
-api.add_resource(UserRegister, "/User")
+api.add_resource(UserRegister, "/user")
 if __name__ == '__main__':
     app.run()

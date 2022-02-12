@@ -12,7 +12,7 @@ class UserRegister(Resource):
             new_user = UserModel(data['username'], data['name'], data['last'], data['password'])
             try:
                 new_user.save_to_db()
-                return {"msg" : "user successfully created!"},201
+                return {"msg": "user successfully created!"}, 201
 
             except:
                 return {"msg": "something went wrong"}, 400

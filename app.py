@@ -4,6 +4,7 @@ from db import db
 from Resources.TaskResource import Task
 from Resources.TasksResource import Tasks
 
+
 app = Flask(__name__)
 
 api = Api(app)

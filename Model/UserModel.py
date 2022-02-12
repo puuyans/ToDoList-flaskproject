@@ -1,5 +1,5 @@
 from db import db
-
+from werkzeug.security import generate_password_hash
 
 class UserModel(db.Model):
     __tablename__ = "users"
@@ -15,7 +15,7 @@ class UserModel(db.Model):
         self.user_username = username
         self.user_name = name
         self.user_last = last
-        self.user_password = password
+        self.user_password = generate_password_hash(password)
         self.user_admin = 0
 
     @classmethod
@@ -26,7 +26,7 @@ class UserModel(db.Model):
 
     @classmethod
     def find_username(cls, username):
-        user = cls.query.filter_by(user_username=username).first_or_404()
+        user = cls.query.filter_by(user_username=username).first()
         if user:
             return user
 

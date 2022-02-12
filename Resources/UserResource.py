@@ -10,9 +10,12 @@ class UserRegister(Resource):
             return {"msg": "user already exists"}, 400
         else:
             new_user = UserModel(data['username'], data['name'], data['last'], data['password'])
-            try:
-                new_user.save_to_db()
-                return {"msg": "user successfully created!"}, 201
+        try:
+            new_user.save_to_db()
+            return {"msg": "user successfully created!"}, 201
 
-            except:
+        except:
                 return {"msg": "something went wrong"}, 400
+
+    def get(self):
+        return {"msg": "something went wrong"}

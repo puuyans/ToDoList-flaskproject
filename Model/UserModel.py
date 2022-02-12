@@ -24,6 +24,12 @@ class UserModel(db.Model):
         if user:
             return user
 
+    @classmethod
+    def find_username(cls, username):
+        user = cls.query.filter_by(user_username=username).first_or_404()
+        if user:
+            return user
+
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()

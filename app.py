@@ -1,15 +1,15 @@
 from flask import Flask
 from flask_restful import Api
 from db import db
-from flask_jwt import JWT
-from Security import authenticate, identity
+from flask_jwt_extended import JWTManager
 from Resources.TaskResource import Task
 from Resources.TasksResource import Tasks
-from Resources.UserResource import UserRegister
+from Resources.UserResource import UserRegister, UserLogin
 
 app = Flask(__name__)
 
-jwt = JWT(app,authenticate,identity)
+jwt = JWTManager(app)
+
 app.secret_key = 'supersecretverydifficulttocrack'
 api = Api(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydb.db"
@@ -26,5 +26,6 @@ def create_tables():
 api.add_resource(Tasks, "/tasks")
 api.add_resource(Task, "/task/<int:task_id>")
 api.add_resource(UserRegister, "/register")
+api.add_resource(UserLogin, "/login")
 if __name__ == '__main__':
     app.run(debug=True)

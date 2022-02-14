@@ -4,6 +4,7 @@ from Model.TaskModel import TaskModel
 
 
 class Task(Resource):
+
     def delete(self, task_id):
         task = TaskModel.find_task_id(task_id)
         if task:

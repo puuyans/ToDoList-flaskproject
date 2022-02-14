@@ -9,6 +9,8 @@ class TaskModel(db.Model):
     task_created_date = db.Column(db.DateTime(), nullable=False)
     task_finished_date = db.Column(db.DateTime(), nullable=True)
     task_finished = db.Column(db.Boolean(), nullable=False)
+    task_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    users = db.relationship('UserModel')
 
     def __init__(self, text):
         self.task_id = None
@@ -16,6 +18,7 @@ class TaskModel(db.Model):
         self.task_created_date = datetime.now()
         self.task_finished_date = None
         self.task_finished = 0
+        self.task_user_id = None
 
     def __repr__(self):
         return {"task_id": self.task_id,

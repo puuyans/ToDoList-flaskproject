@@ -10,6 +10,7 @@ app = Flask(__name__)
 
 jwt = JWTManager(app)
 
+
 app.secret_key = 'supersecretverydifficulttocrack'
 api = Api(app)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydb.db"

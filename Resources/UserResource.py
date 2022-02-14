@@ -19,8 +19,6 @@ class UserRegister(Resource):
         except:
             return {"msg": "something went wrong"}, 400
 
-    def get(self):
-        return {"msg": "something went wrong"}
 
 
 class UserLogin(Resource):

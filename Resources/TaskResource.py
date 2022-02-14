@@ -4,6 +4,7 @@ from Model.TaskModel import TaskModel
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 
+
 class Task(Resource):
 
     @jwt_required()
@@ -28,13 +29,14 @@ class Task(Resource):
         data = request.get_json()
         task = TaskModel.find_task_id(task_id)
         user_id = get_jwt_identity()
+        if task.task_finished == 1:
+            return {"msg": "This task is finished and cannot be modified!"}
         if task and task.task_user_id == user_id:
             task.task_text = data["text"]
             task.save_db()
             return {"msg": "Task updated successfully"}, 200
 
         return {"msg": "No task found or not authorized"}, 401
-
 
     @jwt_required()
     def patch(self, task_id):

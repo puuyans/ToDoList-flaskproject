@@ -1,0 +1,6 @@
+FLask~=2.0.2
+Flask-Restful
+Flask-jwt-extended
+Flask-SQLAlchemy
+uwsgi
+Werkzeug~=2.0.3

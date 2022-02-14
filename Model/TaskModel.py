@@ -33,8 +33,8 @@ class TaskModel(db.Model):
         db.session.commit()
 
     @classmethod
-    def find_task_id(cls, id):
-        task = cls.query.filter_by(task_id=id).first_or_404()
+    def find_task_id(cls, task_id):
+        task = cls.query.filter_by(task_id=task_id).first_or_404()
         if task:
             return task
 
@@ -43,5 +43,10 @@ class TaskModel(db.Model):
         db.session.commit()
 
     @classmethod
-    def all_tasks(cls):
-        return cls.query.all()
+    def all_tasks(cls, user_id):
+        return cls.query.filter_by(task_user_id=user_id).all()
+
+    @classmethod
+    def task_status(cls, task_id):
+        task = cls.query.filter_by(task_id=task_id).first()
+        return task.task_finished

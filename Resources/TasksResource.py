@@ -16,9 +16,10 @@ class Tasks(Resource):
             return {"msg": "Task Created Successfully!"}, 201
         return {"msg": "Try again"}, 400
 
-
+    @jwt_required()
     def get(self):
-        tasks = TaskModel.all_tasks()
+        user_id = get_jwt_identity()
+        tasks = TaskModel.all_tasks(user_id)
         all_tasks = []
         for task in tasks:
             all_tasks.append(task.task_text)

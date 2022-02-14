@@ -10,7 +10,6 @@ class UserModel(db.Model):
     user_last = db.Column(db.String(20))
     user_password = db.Column(db.String(100))
     user_admin = db.Column(db.Boolean)
-    task = db.relationship("TaskModel")
 
     def __init__(self, username, name, last, password):
         self.user_id = None

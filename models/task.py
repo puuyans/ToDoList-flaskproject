@@ -1,5 +1,6 @@
 from datetime import datetime
 from app import db
+from typing import Dict, List
 
 
 class TaskModel(db.Model):
@@ -9,10 +10,10 @@ class TaskModel(db.Model):
     task_created_date = db.Column(db.DateTime(), nullable=False)
     task_finished_date = db.Column(db.DateTime(), nullable=True)
     task_finished = db.Column(db.Boolean(), nullable=False)
-    task_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
-    users = db.relationship('UserModel')
+    task_user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"))
+    users = db.relationship("UserModel")
 
-    def __init__(self, text):
+    def __init__(self, text: str):
         self.task_id = None
         self.task_text = text
         self.task_created_date = datetime.now()
@@ -20,20 +21,21 @@ class TaskModel(db.Model):
         self.task_finished = 0
         self.task_user_id = None
 
-    def __repr__(self):
-        return {"task_id": self.task_id,
-                "task_text": self.task_text,
-                "task_created_date": str(self.task_created_date),
-                "task_finished_date": str(self.task_finished_date),
-                "task_finished": "No" if self.task_finished == 0 else "Yes"
-                }
+    def __repr__(self) -> Dict:
+        return {
+            "task_id": self.task_id,
+            "task_text": self.task_text,
+            "task_created_date": str(self.task_created_date),
+            "task_finished_date": str(self.task_finished_date),
+            "task_finished": "No" if self.task_finished == 0 else "Yes",
+        }
 
     def save_db(self):
         db.session.add(self)
         db.session.commit()
 
     @classmethod
-    def find_task_id(cls, task_id):
+    def find_task_id(cls, task_id: int) -> "TaskModel":
         task = cls.query.filter_by(task_id=task_id).first_or_404()
         if task:
             return task
@@ -43,10 +45,10 @@ class TaskModel(db.Model):
         db.session.commit()
 
     @classmethod
-    def all_tasks(cls, user_id):
+    def all_tasks(cls, user_id: int) -> List["TaskModel"]:
         return cls.query.filter_by(task_user_id=user_id).all()
 
     @classmethod
-    def task_status(cls, task_id):
+    def task_status(cls, task_id: int) -> int:
         task = cls.query.filter_by(task_id=task_id).first()
         return task.task_finished

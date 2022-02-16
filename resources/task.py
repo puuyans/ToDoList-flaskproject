@@ -1,14 +1,13 @@
 from flask import request
 from flask_restful import Resource
-from Model.TaskModel import TaskModel
+from models.task import TaskModel
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 
 
 class Task(Resource):
-
     @jwt_required(fresh=True)
-    def delete(self, task_id):
+    def delete(self, task_id: int):
         user_id = get_jwt_identity()
         task = TaskModel.find_task_id(task_id)
         if task and task.task_user_id == user_id:
@@ -17,7 +16,7 @@ class Task(Resource):
         return {"msg": "No task found or not authorized"}, 401
 
     @jwt_required()
-    def get(self, task_id):
+    def get(self, task_id: int):
         user_id = get_jwt_identity()
         task = TaskModel.find_task_id(task_id)
         if task and task.task_user_id == user_id:
@@ -25,7 +24,7 @@ class Task(Resource):
         return {"msg": "No task found or not authorized"}, 401
 
     @jwt_required()
-    def put(self, task_id):
+    def put(self, task_id: int):
         data = request.get_json()
         task = TaskModel.find_task_id(task_id)
         user_id = get_jwt_identity()
@@ -39,7 +38,7 @@ class Task(Resource):
         return {"msg": "No task found or not authorized"}, 401
 
     @jwt_required()
-    def patch(self, task_id):
+    def patch(self, task_id: int):
         user_id = get_jwt_identity()
         task = TaskModel.find_task_id(task_id)
         if task and task.task_user_id == user_id:

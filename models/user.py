@@ -11,7 +11,7 @@ class UserModel(db.Model):
     user_password = db.Column(db.String(100))
     user_admin = db.Column(db.Boolean)
 
-    def __init__(self, username, name, last, password):
+    def __init__(self, username: str, name: str, last: str, password: str):
         self.user_id = None
         self.user_username = username
         self.user_name = name
@@ -20,13 +20,13 @@ class UserModel(db.Model):
         self.user_admin = 0
 
     @classmethod
-    def find_user_by_id(cls, userid):
-        user = cls.query.filter_by(user_id=userid).first_or_404()
+    def find_user_by_id(cls, user_id: int) -> "UserModel":
+        user = cls.query.filter_by(user_id=user_id).first_or_404()
         if user:
             return user
 
     @classmethod
-    def find_username(cls, username):
+    def find_username(cls, username: str) -> "UserModel":
         user = cls.query.filter_by(user_username=username).first()
         if user:
             return user

@@ -2,22 +2,22 @@ from flask import Flask
 from flask_restful import Api
 from db import db
 from flask_jwt_extended import JWTManager
-from Resources.TaskResource import Task
-from Resources.TasksResource import Tasks
-from Resources.UserResource import UserRegister, UserLogin, TokenRefresh, UserLogout
-from Model.TokenBlocklist import TokenBlocklist
+from resources.task import Task
+from resources.tasks import Tasks
+from resources.user import UserRegister, UserLogin, TokenRefresh, UserLogout
+from models.token_blocklist import TokenBlocklist
 
 app = Flask(__name__)
 
 jwt = JWTManager(app)
 
-app.secret_key = 'supersecretverydifficulttocrack'
+app.secret_key = "supersecretverydifficulttocrack"
 api = Api(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///mydb.db"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['PROPAGATE_EXCEPTIONS'] = True
-app.config['JWT_BLACKLIST_ENABLED'] = True
-app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydb.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["PROPAGATE_EXCEPTIONS"] = True
+app.config["JWT_BLACKLIST_ENABLED"] = True
+app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
 db.init_app(app)
 
 
@@ -46,5 +46,5 @@ api.add_resource(UserLogin, "/login")
 api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(UserLogout, "/logout")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

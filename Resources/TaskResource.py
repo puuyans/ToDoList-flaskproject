@@ -7,7 +7,7 @@ from datetime import datetime
 
 class Task(Resource):
 
-    @jwt_required()
+    @jwt_required(fresh=True)
     def delete(self, task_id):
         user_id = get_jwt_identity()
         task = TaskModel.find_task_id(task_id)

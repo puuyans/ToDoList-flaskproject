@@ -1,5 +1,6 @@
 from flask import request
 from flask_restful import Resource
+from flask.views import MethodView
 from models.user import UserModel
 from models.token_blocklist import TokenBlocklist
 from werkzeug.security import check_password_hash
@@ -29,7 +30,7 @@ class UserRegister(Resource):
             return {"msg": "something went wrong"}, 400
 
 
-class UserLogin(Resource):
+class UserLogin(MethodView):
     def post(self):
         data = request.get_json()
         user = UserModel.find_username(data["username"])

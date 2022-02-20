@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_restful import Api
 from db import db
 from flask_jwt_extended import JWTManager
 from resources.task import Task
@@ -12,7 +11,7 @@ app = Flask(__name__)
 jwt = JWTManager(app)
 
 app.secret_key = "supersecretverydifficulttocrack"
-api = Api(app)
+
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydb.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["PROPAGATE_EXCEPTIONS"] = True
@@ -39,12 +38,12 @@ def invalid_token_callback(error):
     return {"msg": "invalid token"}
 
 
-api.add_resource(Tasks, "/tasks")
-api.add_resource(Task, "/task/<int:task_id>")
-api.add_resource(UserRegister, "/register")
-api.add_resource(UserLogin, "/login")
-api.add_resource(TokenRefresh, "/refresh")
-api.add_resource(UserLogout, "/logout")
+app.add_url_rule("/tasks", view_func=Tasks.as_view("/tasks"), methods=['POST', 'GET'])
+app.add_url_rule("/task/<int:task_id>", view_func=Task.as_view("/task"), methods=['GET', ])
+app.add_url_rule('/register', view_func=UserRegister.as_view("/register"), methods=['POST', ])
+app.add_url_rule('/login', view_func=UserLogin.as_view('/login'), methods=['POST', ])
+app.add_url_rule('/refresh', view_func=TokenRefresh.as_view('/refresh'), methods=['POST', ])
+app.add_url_rule('/logout', view_func=UserLogout.as_view('/logout'), methods=['POST', ])
 
 if __name__ == "__main__":
     app.run(debug=True)

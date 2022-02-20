@@ -36,7 +36,7 @@ class TaskModel(db.Model):
 
     @classmethod
     def find_task_id(cls, task_id: int) -> "TaskModel":
-        task = cls.query.filter_by(task_id=task_id).first_or_404()
+        task = cls.query.filter_by(task_id=task_id).first()
         if task:
             return task
 

@@ -1,10 +1,10 @@
 from flask import request
-from flask_restful import Resource
+from flask.views import MethodView
 from models.task import TaskModel
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 
-class Tasks(Resource):
+class Tasks(MethodView):
     @jwt_required()
     def post(self):
         user_id = get_jwt_identity()

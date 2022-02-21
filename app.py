@@ -2,8 +2,9 @@ from flask import Flask
 from db import db
 from flask_jwt_extended import JWTManager
 from resources.task import Task
-from resources.tasks import Tasks
-from resources.user import UserRegister, UserLogin, TokenRefresh, UserLogout
+
+from resources.user import UserService
+
 from models.token_blocklist import TokenBlocklist
 
 app = Flask(__name__)
@@ -38,12 +39,38 @@ def invalid_token_callback(error):
     return {"msg": "invalid token"}
 
 
-app.add_url_rule("/tasks", view_func=Tasks.as_view("/tasks"), methods=['POST', 'GET'])
-app.add_url_rule("/task/<int:task_id>", view_func=Task.as_view("/task"), methods=['GET', ])
-app.add_url_rule('/register', view_func=UserRegister.as_view("/register"), methods=['POST', ])
-app.add_url_rule('/login', view_func=UserLogin.as_view('/login'), methods=['POST', ])
-app.add_url_rule('/refresh', view_func=TokenRefresh.as_view('/refresh'), methods=['POST', ])
-app.add_url_rule('/logout', view_func=UserLogout.as_view('/logout'), methods=['POST', ])
+# viewing all tasks and create a new task
+app.add_url_rule(
+    "/tasks",
+    view_func=Task.manage_all_tasks,
+    methods=["POST", "GET"]
+)
+
+# actions for a specific task such as update, delete and view
+app.add_url_rule(
+    "/task/<int:task_id>/",
+    view_func=Task.manage_task,
+    methods=["GET", "DELETE", "PUT"],
+)
+
+# actions for a user such as login logout or register
+app.add_url_rule(
+    "/register",
+    view_func=UserService.user_register,
+    methods=["POST"],
+)
+
+app.add_url_rule(
+    "/login",
+    view_func=UserService.user_login,
+    methods=["POST"],
+)
+
+app.add_url_rule(
+    "/logout",
+    view_func=UserService.user_logout,
+    methods=["POST"],
+)
 
 if __name__ == "__main__":
     app.run(debug=True)

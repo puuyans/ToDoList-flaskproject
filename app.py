@@ -36,7 +36,7 @@ def create_tables():
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error):
-    return {"msg": "invalid token"}
+    return {"msg": "invalid token!"}
 
 
 # viewing all tasks and create a new task
@@ -69,6 +69,12 @@ app.add_url_rule(
 app.add_url_rule(
     "/logout",
     view_func=UserService.user_logout,
+    methods=["POST"],
+)
+
+app.add_url_rule(
+    "/refresh",
+    view_func=UserService.token_refresh,
     methods=["POST"],
 )
 

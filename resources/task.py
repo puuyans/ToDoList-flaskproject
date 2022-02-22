@@ -26,7 +26,6 @@ class Task(MethodView):
     """
 
     @classmethod
-    @jwt_required(refresh=True)
     def manage_all_tasks(cls):
         if request.method == "POST":
             return cls._create_task()
@@ -34,7 +33,7 @@ class Task(MethodView):
             return cls._view_all_tasks()
 
     @classmethod
-    @jwt_required(refresh=True)
+    @jwt_required()
     def _view_all_tasks(cls):
         user_id = get_jwt_identity()
         tasks = TaskModel.all_tasks(user_id)
@@ -46,7 +45,7 @@ class Task(MethodView):
         return {"msg": NO_TASKS_FOUND}, 404
 
     @classmethod
-    @jwt_required(refresh=True)
+    @jwt_required()
     def _create_task(cls):
         user_id = get_jwt_identity()
         data = request.get_json()

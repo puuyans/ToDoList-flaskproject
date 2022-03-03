@@ -2,10 +2,9 @@ from flask import Flask
 from db import db
 from flask_jwt_extended import JWTManager
 from resources.task import Task
-
 from resources.user import UserService
-
 from models.token_blocklist import TokenBlocklist
+
 
 app = Flask(__name__)
 
@@ -36,15 +35,11 @@ def create_tables():
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error):
-    return {"msg": "invalid token"}
+    return {"msg": "invalid token!"}
 
 
 # viewing all tasks and create a new task
-app.add_url_rule(
-    "/tasks",
-    view_func=Task.manage_all_tasks,
-    methods=["POST", "GET"]
-)
+app.add_url_rule("/tasks", view_func=Task.manage_all_tasks, methods=["POST", "GET"])
 
 # actions for a specific task such as update, delete and view
 app.add_url_rule(
@@ -69,6 +64,12 @@ app.add_url_rule(
 app.add_url_rule(
     "/logout",
     view_func=UserService.user_logout,
+    methods=["POST"],
+)
+
+app.add_url_rule(
+    "/refresh",
+    view_func=UserService.token_refresh,
     methods=["POST"],
 )
 

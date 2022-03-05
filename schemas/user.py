@@ -1,11 +1,4 @@
-from marshmallow import Schema, fields, ValidationError
-from models.user import UserModel
-
-
-def duplicate_user(request_username):
-    if UserModel.find_username(username=request_username):
-        raise ValidationError("Duplicate User from schema")
-
+from marshmallow import Schema, fields, validate, pre_load
 
 
 class UserSchema(Schema):
@@ -13,7 +6,21 @@ class UserSchema(Schema):
         load_only = ()
         dump_only = ()
 
-    username = fields.Str(required=True, validate=duplicate_user)
-    name = fields.Str()
-    last = fields.Str()
-    password = fields.Str(required=True)
+    username = fields.Str(required=True, validate=validate.Length(min=3, max=20))
+    name = fields.Str(validate=validate.Length(min=3, max=20))
+    last = fields.Str(validate=validate.Length(min=3, max=20))
+    password = fields.Str(required=True, validate=validate.Length(min=3, max=20))
+
+    # strip input data
+    @pre_load(
+        pass_many=True,
+    )
+    def strip_data(self, item, many, **kwargs):
+        if "username" in item:
+            item["username"] = item["username"].strip()
+        if "name" in item:
+            item["name"] = item["name"].strip()
+        if "last" in item:
+            item["last"] = item["last"].strip()
+
+        return item

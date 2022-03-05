@@ -52,3 +52,7 @@ class TaskModel(db.Model):
     def task_status(cls, task_id: int) -> int:
         task = cls.query.filter_by(task_id=task_id).first()
         return task.task_finished
+
+
+class TaskUtility(TaskModel):
+    pass

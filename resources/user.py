@@ -3,6 +3,8 @@ from flask.views import MethodView
 from models.user import UserModel
 from models.token_blocklist import TokenBlocklist
 from werkzeug.security import check_password_hash
+from marshmallow import ValidationError, EXCLUDE
+from schemas.user import UserSchema
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -11,10 +13,13 @@ from flask_jwt_extended import (
     get_jwt,
 )
 
-DUPLICATE_USER = "User already exists, choose another user!"
+DUPLICATE_USER = "User already exists, choose another username!"
 USER_CREATE_SUCCESSFUL = "User created successfully!"
 LOGIN_FAILED = "Login failed! Invalid credentials!"
 JWT_REVOKED = "User logged out!"
+USER_CREATE_FAILED = "Could not create new user"
+
+user_schema = UserSchema(unknown=EXCLUDE)
 
 
 class UserService(MethodView):
@@ -25,25 +30,61 @@ class UserService(MethodView):
 
     @classmethod
     def user_register(cls):
-        data = request.get_json()
-        if UserModel.find_username(username=data["username"]):
-            return {"msg": DUPLICATE_USER}, 400
+        # creating a dictionary of incoming json data
+        try:
+            get_json = request.get_json()
+            data = user_schema.load(get_json)
+        except ValidationError as err:
+            return err.messages, 400
 
+        # checking for duplicate username in db
+        try:
+            cls._duplicate_user(data["username"])
+        except ValidationError as err:
+            return {"error": err.messages}, 400
+
+        # finally, inserting the new user data in db
+        try:
+            cls._create_user(data)
+            return {"msg": USER_CREATE_SUCCESSFUL}, 201
+        except ConnectionError:
+            return {"msg": USER_CREATE_FAILED}, 400
+
+    @classmethod
+    def _duplicate_user(cls, request_username: str):
+        if UserModel.find_username(username=request_username):
+            raise ValidationError(DUPLICATE_USER, field_name="Username")
+
+    @classmethod
+    def _create_user(cls, data: dict):
         new_user = UserModel(
             data["username"], data["name"], data["last"], data["password"]
         )
-        new_user.save_to_db()
-        return {"msg": USER_CREATE_SUCCESSFUL}, 201
+        return new_user.save_to_db()
 
     @classmethod
     def user_login(cls):
-        data = request.get_json()
-        user = UserModel.find_username(data["username"])
-        if user and check_password_hash(user.user_password, data["password"]):
-            access_token = create_access_token(identity=user.user_id, fresh=True)
-            refresh_token = create_refresh_token(user.user_id)
-            return {"access_token": access_token, "refresh_token": refresh_token}, 200
-        return {"msg": LOGIN_FAILED}, 401
+        try:
+            get_json = request.get_json()
+            data = user_schema.load(get_json)
+        except ValidationError as err:
+            return err.messages, 400
+
+        try:
+            user = UserModel.find_username(data["username"])
+        except ValueError:
+            return {"msg": LOGIN_FAILED}, 404
+
+        try:
+            if user and check_password_hash(user.user_password, data["password"]):
+                access_token = create_access_token(identity=user.user_id, fresh=True)
+                refresh_token = create_refresh_token(user.user_id)
+                return {
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                }, 200
+        except ValueError:
+            return {"msg": LOGIN_FAILED}, 401
 
     @classmethod
     @jwt_required()

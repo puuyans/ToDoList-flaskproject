@@ -3,6 +3,8 @@ from flask.views import MethodView
 from models.task import TaskModel
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
+from schemas.task import TaskSchema
+from marshmallow import ValidationError, EXCLUDE
 
 TASK_NOT_FOUND = "Task not found"
 NOT_AUTHORIZED_DELETE = "Only creator of the task can delete the task"
@@ -16,6 +18,8 @@ NO_TASKS_FOUND = "No task found for this user!"
 TASK_CREATED_SUCCESSFULLY = "Task created successfully!"
 TASK_CREATED_FAILED = "Creating new task failed!"
 
+task_schema = TaskSchema(unknown=EXCLUDE)
+
 
 class Task(MethodView):
     """
@@ -26,17 +30,23 @@ class Task(MethodView):
     """
 
     @classmethod
+    @jwt_required()
     def manage_all_tasks(cls):
+        user_id = get_jwt_identity()
         if request.method == "POST":
-            return cls._create_task()
+            try:
+                get_json = request.get_json()
+                data = task_schema.load(get_json)
+            except ValidationError as err:
+                return err.messages, 400
+
+            return cls._create_task(data, user_id)
         elif request.method == "GET":
-            return cls._view_all_tasks()
+            return cls._view_all_tasks(user_id)
 
     @classmethod
-    @jwt_required()
-    def _view_all_tasks(cls):
-        user_id = get_jwt_identity()
-        tasks = TaskModel.all_tasks(user_id)
+    def _view_all_tasks(cls, userid):
+        tasks = TaskModel.all_tasks(userid)
         all_tasks = []
         for task in tasks:
             all_tasks.append(task.task_text)
@@ -45,12 +55,9 @@ class Task(MethodView):
         return {"msg": NO_TASKS_FOUND}, 404
 
     @classmethod
-    @jwt_required()
-    def _create_task(cls):
-        user_id = get_jwt_identity()
-        data = request.get_json()
+    def _create_task(cls, data, userid):
         new_task = TaskModel(data["text"])
-        new_task.task_user_id = user_id
+        new_task.task_user_id = userid
         if new_task:
             new_task.save_db()
             return {"msg": TASK_CREATED_SUCCESSFULLY}, 201
@@ -59,65 +66,54 @@ class Task(MethodView):
     @classmethod
     @jwt_required()
     def manage_task(cls, task_id: int):
-        if request.method == "GET":
-            return cls._view_task(task_id)
-        elif request.method == "DELETE":
-            return cls._delete_task(task_id)
-        elif request.method == "PUT":
-            return cls._modify_task(task_id)
-
-    @classmethod
-    @jwt_required(fresh=True)
-    def _delete_task(cls, task_id: int):
-        user_id = get_jwt_identity()
-        task = TaskModel.find_task_id(task_id)
-        if not task:
-            return {"msg": TASK_NOT_FOUND}, 404
-        if task.task_user_id != user_id:
-            return {"msg": NOT_AUTHORIZED_DELETE}, 403
-        if task.task_user_id == user_id and task:
-            return {"msg": TASK_DELETED_SUCCESSFULLY}, 200
-
-    @classmethod
-    @jwt_required()
-    def _view_task(cls, task_id: int):
         user_id = get_jwt_identity()
         task = TaskModel.find_task_id(task_id)
         if not task:
             return {"msg": TASK_NOT_FOUND}, 404
         if task.task_user_id != user_id:
             return {"msg": NOT_AUTHORIZED_VIEW}, 403
-        if task and task.task_user_id == user_id:
-            return task.__repr__(), 200
 
-    @jwt_required()
-    def _modify_task(self, task_id: int):
-        data = request.get_json()
-        task = TaskModel.find_task_id(task_id)
-        user_id = get_jwt_identity()
-        if not task:
-            return {"msg": TASK_NOT_FOUND}, 404
-        if task.task_user_id != user_id:
-            return {"msg": NOT_AUTHORIZED_MODIFY}, 403
-        if task.task_finished == 1:
-            return {"msg": FINISHED_TASK_MODIFY}, 403
-        if task and task.task_user_id == user_id:
-            task.task_text = data["text"]
-            task.save_db()
-            return {"msg": TASK_UPDATED_SUCCESSFULLY}, 200
+        # view the task
+        if request.method == "GET":
+            return cls._view_task(task)
 
+        # delete the task
+        elif request.method == "DELETE":
+            return cls._delete_task(task)
+
+        # make changes to the task/ edit the text or finish the task
+        elif request.method == "PUT":
+            get_json = request.get_json()
+            data = task_schema.load(get_json)
+            if task.task_finished == 1:
+                return {"msg": FINISHED_TASK_MODIFY}
+            if "text" in data:
+                return cls._modify_task_text(task, data)
+            if "finished" in data:
+                return cls._finish_task(task)
+
+    @classmethod
+    @jwt_required(fresh=True)
+    def _delete_task(cls, task: object):
+        task.delete_task()
+        return {"msg": TASK_DELETED_SUCCESSFULLY}, 200
+
+    @classmethod
     @jwt_required()
-    def _finish_task(self, task_id: int):
-        user_id = get_jwt_identity()
-        task = TaskModel.find_task_id(task_id)
-        if not task:
-            return {"msg": TASK_NOT_FOUND}, 404
-        if task.task_user_id != user_id:
-            return {"msg": NOT_AUTHORIZED_MODIFY}, 403
-        if task.task_finished == 1:
-            return {"msg": FINISHED_TASK_MODIFY}, 403
-        if task and task.task_user_id == user_id:
-            task.task_finished_date = datetime.now()
-            task.task_finished = 1
-            task.save_db()
-            return {"msg": TASK_FINISHED_SUCCESSFULLY}, 200
+    def _view_task(cls, task: object):
+        return task.__repr__(), 200
+
+    @classmethod
+    @jwt_required()
+    def _modify_task_text(cls, task: object, data: dict):
+        task.task_text = data["text"]
+        task.save_db()
+        return {"msg": TASK_UPDATED_SUCCESSFULLY}, 200
+
+    @classmethod
+    @jwt_required()
+    def _finish_task(cls, task: object):
+        task.task_finished_date = datetime.now()
+        task.task_finished = 1
+        task.save_db()
+        return {"msg": TASK_FINISHED_SUCCESSFULLY}, 200

@@ -2,10 +2,9 @@ from flask import Flask
 from db import db
 from flask_jwt_extended import JWTManager
 from resources.task import Task
-
 from resources.user import UserService
-
 from models.token_blocklist import TokenBlocklist
+
 
 app = Flask(__name__)
 
@@ -40,11 +39,7 @@ def invalid_token_callback(error):
 
 
 # viewing all tasks and create a new task
-app.add_url_rule(
-    "/tasks",
-    view_func=Task.manage_all_tasks,
-    methods=["POST", "GET"]
-)
+app.add_url_rule("/tasks", view_func=Task.manage_all_tasks, methods=["POST", "GET"])
 
 # actions for a specific task such as update, delete and view
 app.add_url_rule(

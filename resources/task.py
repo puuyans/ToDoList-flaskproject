@@ -101,7 +101,7 @@ class Task(MethodView):
     @classmethod
     @jwt_required()
     def _view_task(cls, task: object):
-        return task.__repr__(), 200
+        return task.__repr__()
 
     @classmethod
     @jwt_required()

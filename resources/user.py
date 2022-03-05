@@ -1,10 +1,11 @@
-from flask import request
+from flask import request, jsonify
 from flask.views import MethodView
 from models.user import UserModel
 from models.token_blocklist import TokenBlocklist
 from werkzeug.security import check_password_hash
 from marshmallow import ValidationError, EXCLUDE
-from schemas.user import UserSchema
+from sqlalchemy.exc import SQLAlchemyError
+from schemas.user import UserLoginSchema, UserRegisterSchema
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -19,7 +20,8 @@ LOGIN_FAILED = "Login failed! Invalid credentials!"
 JWT_REVOKED = "User logged out!"
 USER_CREATE_FAILED = "Could not create new user"
 
-user_schema = UserSchema(unknown=EXCLUDE)
+login_schema = UserLoginSchema(unknown=EXCLUDE)
+register_schema = UserRegisterSchema(unknown=EXCLUDE)
 
 
 class UserService(MethodView):
@@ -33,7 +35,7 @@ class UserService(MethodView):
         # creating a dictionary of incoming json data
         try:
             get_json = request.get_json()
-            data = user_schema.load(get_json)
+            data = register_schema.load(get_json)
         except ValidationError as err:
             return err.messages, 400
 
@@ -66,25 +68,23 @@ class UserService(MethodView):
     def user_login(cls):
         try:
             get_json = request.get_json()
-            data = user_schema.load(get_json)
+            data = login_schema.load(get_json)
         except ValidationError as err:
             return err.messages, 400
 
         try:
             user = UserModel.find_username(data["username"])
-        except ValueError:
-            return {"msg": LOGIN_FAILED}, 404
+        except SQLAlchemyError:
+            return jsonify({"msg": LOGIN_FAILED}), 404
 
-        try:
-            if user and check_password_hash(user.user_password, data["password"]):
-                access_token = create_access_token(identity=user.user_id, fresh=True)
-                refresh_token = create_refresh_token(user.user_id)
-                return {
-                    "access_token": access_token,
-                    "refresh_token": refresh_token,
-                }, 200
-        except ValueError:
-            return {"msg": LOGIN_FAILED}, 401
+        if user and check_password_hash(user.user_password, data["password"]):
+            access_token = create_access_token(identity=user.user_id, fresh=True)
+            refresh_token = create_refresh_token(user.user_id)
+            return {
+                       "access_token": access_token,
+                       "refresh_token": refresh_token,
+                   }, 200
+        return {"msg": LOGIN_FAILED}, 400
 
     @classmethod
     @jwt_required()

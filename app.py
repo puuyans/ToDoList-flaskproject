@@ -4,7 +4,7 @@ from flask_jwt_extended import JWTManager
 from resources.task import Task
 from resources.user import UserService
 from models.token_blocklist import TokenBlocklist
-
+from marshmallow import ValidationError
 
 app = Flask(__name__)
 
@@ -18,6 +18,11 @@ app.config["PROPAGATE_EXCEPTIONS"] = True
 app.config["JWT_BLACKLIST_ENABLED"] = True
 app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
 db.init_app(app)
+
+
+# @app.errorhandler(ValidationError)
+# def marshmallow_error(err):
+#     return {err.messages}, 400
 
 
 # Callback function to check if a JWT exists in the database blocklist
@@ -43,7 +48,7 @@ app.add_url_rule("/tasks", view_func=Task.manage_all_tasks, methods=["POST", "GE
 
 # actions for a specific task such as update, delete and view
 app.add_url_rule(
-    "/task/<int:task_id>/",
+    "/task/<int:task_id>",
     view_func=Task.manage_task,
     methods=["GET", "DELETE", "PUT"],
 )

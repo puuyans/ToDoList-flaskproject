@@ -27,9 +27,8 @@ class UserModel(db.Model):
 
     @classmethod
     def find_username(cls, username: str) -> "UserModel":
-        user = cls.query.filter_by(user_username=username).first()
-        if user:
-            return user
+        user = cls.query.filter_by(user_username=username).one()
+        return user
 
     def save_to_db(self):
         db.session.add(self)

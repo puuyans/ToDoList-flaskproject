@@ -10,6 +10,7 @@ class UserRegisterSchema(Schema):
     name = fields.Str(required=True, validate=validate.Length(min=3, max=20))
     last = fields.Str(required=True, validate=validate.Length(min=3, max=20))
     password = fields.Str(required=True, validate=validate.Length(min=3, max=20))
+    email = fields.Str(required=True, validate=validate.Length(min=5, max=30))
 
     # strip input data
     @pre_load(

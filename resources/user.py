@@ -19,6 +19,7 @@ USER_CREATE_SUCCESSFUL = "User created successfully!"
 LOGIN_FAILED = "Login failed! Invalid credentials!"
 JWT_REVOKED = "User logged out!"
 USER_CREATE_FAILED = "Could not create new user"
+EMAIL_ACTIVATED_FALSE = "User email is not activated!"
 
 login_schema = UserLoginSchema(unknown=EXCLUDE)
 register_schema = UserRegisterSchema(unknown=EXCLUDE)
@@ -60,7 +61,7 @@ class UserService(MethodView):
     @classmethod
     def _create_user(cls, data: dict):
         new_user = UserModel(
-            data["username"], data["name"], data["last"], data["password"]
+            data["username"], data["name"], data["last"], data["email"], data["password"]
         )
         return new_user.save_to_db()
 
@@ -78,12 +79,14 @@ class UserService(MethodView):
             return jsonify({"msg": LOGIN_FAILED}), 404
 
         if user and check_password_hash(user.user_password, data["password"]):
-            access_token = create_access_token(identity=user.user_id, fresh=True)
-            refresh_token = create_refresh_token(user.user_id)
-            return {
-                       "access_token": access_token,
-                       "refresh_token": refresh_token,
-                   }, 200
+            if user.user_activated:
+                access_token = create_access_token(identity=user.user_id, fresh=True)
+                refresh_token = create_refresh_token(user.user_id)
+                return {
+                           "access_token": access_token,
+                           "refresh_token": refresh_token,
+                       }, 200
+            return {"msg": EMAIL_ACTIVATED_FALSE}, 400
         return {"msg": LOGIN_FAILED}, 400
 
     @classmethod

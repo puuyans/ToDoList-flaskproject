@@ -73,6 +73,13 @@ app.add_url_rule(
 )
 
 app.add_url_rule(
+    "/activate/<int:user_id>",
+    view_func=UserService.activate_user,
+    methods=["PUT"],
+)
+
+
+app.add_url_rule(
     "/refresh",
     view_func=UserService.token_refresh,
     methods=["POST"],

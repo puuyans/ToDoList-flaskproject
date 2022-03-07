@@ -23,7 +23,6 @@ class UserModel(db.Model):
         self.user_admin = False
         self.user_activated = False
 
-
     @classmethod
     def find_user_by_id(cls, user_id: int) -> "UserModel":
         user = cls.query.filter_by(user_id=user_id).first_or_404()
@@ -38,3 +37,5 @@ class UserModel(db.Model):
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()
+
+

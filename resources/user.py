@@ -20,6 +20,8 @@ LOGIN_FAILED = "Login failed! Invalid credentials!"
 JWT_REVOKED = "User logged out!"
 USER_CREATE_FAILED = "Could not create new user"
 EMAIL_ACTIVATED_FALSE = "User email is not activated!"
+USER_NOT_FOUND = "Username not found!"
+USER_ACTIVATED_SUCCESS = "User activated successfully!"
 
 login_schema = UserLoginSchema(unknown=EXCLUDE)
 register_schema = UserRegisterSchema(unknown=EXCLUDE)
@@ -103,3 +105,12 @@ class UserService(MethodView):
         current_user = get_jwt_identity()
         new_token = create_access_token(identity=current_user, fresh=False)
         return {"access_token": new_token}, 200
+
+    @classmethod
+    def activate_user(cls, user_id: int):
+        user = UserModel.find_user_by_id(user_id)
+        if user:
+            user.user_activated = 1
+            user.save_to_db()
+            return {"msg": USER_ACTIVATED_SUCCESS}, 200
+        return {"msg": USER_NOT_FOUND}

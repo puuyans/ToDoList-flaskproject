@@ -45,8 +45,12 @@ class TaskModel(db.Model):
         db.session.commit()
 
     @classmethod
-    def all_tasks(cls, user_id: int) -> List["TaskModel"]:
-        return cls.query.filter_by(task_user_id=user_id).all()
+    def all_tasks(cls, user_id: int) -> "List":
+        all_tasks = []
+        results = cls.query.filter_by(task_user_id=user_id).all()
+        for task in results:
+            all_tasks.append(task.__repr__())
+        return all_tasks
 
     @classmethod
     def task_status(cls, task_id: int) -> int:

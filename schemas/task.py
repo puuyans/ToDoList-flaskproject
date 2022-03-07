@@ -6,8 +6,8 @@ class TaskSchema(Schema):
         load_only = ()
         dump_only = ()
 
-    text = fields.String(validate=validate.Length(min=1, max=100))
-    finished = fields.Boolean()
+    text = fields.String(required=True, validate=validate.Length(min=1, max=100))
+    finished = fields.Boolean(required=True)
 
     @pre_load
     def strip_text(self, item, many, **kwargs):

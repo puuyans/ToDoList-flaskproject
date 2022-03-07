@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, jsonify
 from flask.views import MethodView
 from models.task import TaskModel
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -47,11 +47,8 @@ class Task(MethodView):
     @classmethod
     def _view_all_tasks(cls, userid):
         tasks = TaskModel.all_tasks(userid)
-        all_tasks = []
-        for task in tasks:
-            all_tasks.append(task.task_text)
-        if all_tasks:
-            return {"tasks": all_tasks}, 200
+        if tasks:
+            return jsonify(tasks), 200
         return {"msg": NO_TASKS_FOUND}, 404
 
     @classmethod

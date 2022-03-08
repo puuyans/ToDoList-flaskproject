@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, make_response, render_template
 from flask.views import MethodView
 from models.user import UserModel
 from models.token_blocklist import TokenBlocklist
@@ -22,6 +22,7 @@ USER_CREATE_FAILED = "Could not create new user"
 EMAIL_ACTIVATED_FALSE = "User email is not activated!"
 USER_NOT_FOUND = "Username not found!"
 USER_ACTIVATED_SUCCESS = "User activated successfully!"
+USER_ALREADY_CONFIRMED = "This user is already activated!"
 
 login_schema = UserLoginSchema(unknown=EXCLUDE)
 register_schema = UserRegisterSchema(unknown=EXCLUDE)
@@ -110,7 +111,11 @@ class UserService(MethodView):
     def activate_user(cls, user_id: int):
         user = UserModel.find_user_by_id(user_id)
         if user:
+            if user.user_activated == 1:
+                return {"msg": USER_ALREADY_CONFIRMED}, 409
             user.user_activated = 1
             user.save_to_db()
-            return {"msg": USER_ACTIVATED_SUCCESS}, 200
-        return {"msg": USER_NOT_FOUND}
+            headers = {"Content-Type": "text/html"}
+            return make_response(render_template("confirmation_page.html", email=user.user_email, name=user.user_name),
+                                 headers)
+        return {"msg": USER_NOT_FOUND}, 404

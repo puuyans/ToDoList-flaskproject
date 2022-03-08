@@ -60,6 +60,7 @@ class Task(MethodView):
             return {"msg": TASK_CREATED_SUCCESSFULLY}, 201
         return {"msg": TASK_CREATED_FAILED}, 400
 
+# TODO - fix editing task and properly serializing/ deserializing
     @classmethod
     @jwt_required()
     def manage_task(cls, task_id: int):

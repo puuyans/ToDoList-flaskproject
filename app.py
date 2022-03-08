@@ -40,7 +40,7 @@ def create_tables():
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error):
-    return {"msg": "invalid token!"}
+    return {"msg": "invalid token!"}, 401
 
 
 # viewing all tasks and create a new task
@@ -76,6 +76,12 @@ app.add_url_rule(
     "/refresh",
     view_func=UserService.token_refresh,
     methods=["POST"],
+)
+
+app.add_url_rule(
+    "/activate/<int:user_id>",
+    view_func=UserService.activate_user,
+    methods=["PUT"],
 )
 
 if __name__ == "__main__":

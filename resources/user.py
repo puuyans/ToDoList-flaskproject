@@ -1,4 +1,4 @@
-from flask import request, jsonify, make_response, render_template
+from flask import request, make_response, render_template
 from flask.views import MethodView
 from models.user import UserModel
 from models.token_blocklist import TokenBlocklist
@@ -23,6 +23,7 @@ EMAIL_ACTIVATED_FALSE = "User email is not activated!"
 USER_NOT_FOUND = "Username not found!"
 USER_ACTIVATED_SUCCESS = "User activated successfully!"
 USER_ALREADY_CONFIRMED = "This user is already activated!"
+DUPLICATE_EMAIL = "Email already exists, choose another email!"
 
 login_schema = UserLoginSchema(unknown=EXCLUDE)
 register_schema = UserRegisterSchema(unknown=EXCLUDE)
@@ -49,6 +50,12 @@ class UserService(MethodView):
         except ValidationError as err:
             return {"error": err.messages}, 400
 
+        # checking for duplicate email
+        try:
+            cls._duplicate_email(data["email"])
+        except ValidationError as err:
+            return {"error": err.messages}, 400
+
         # finally, inserting the new user data in db
         try:
             cls._create_user(data)
@@ -60,6 +67,11 @@ class UserService(MethodView):
     def _duplicate_user(cls, request_username: str):
         if UserModel.find_username(username=request_username):
             raise ValidationError(DUPLICATE_USER, field_name="Username")
+
+    @classmethod
+    def _duplicate_email(cls, request_email: str):
+        if UserModel.find_email(request_email):
+            raise ValidationError(DUPLICATE_EMAIL, field_name="Email")
 
     @classmethod
     def _create_user(cls, data: dict):
@@ -79,7 +91,7 @@ class UserService(MethodView):
         try:
             user = UserModel.find_username(data["username"])
         except SQLAlchemyError:
-            return jsonify({"msg": LOGIN_FAILED}), 404
+            return {"msg": LOGIN_FAILED}, 404
 
         if user and check_password_hash(user.user_password, data["password"]):
             if user.user_activated:

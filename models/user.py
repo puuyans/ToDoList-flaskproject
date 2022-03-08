@@ -8,7 +8,7 @@ class UserModel(db.Model):
     user_username = db.Column(db.String(20), nullable=False)
     user_name = db.Column(db.String(20), nullable=False)
     user_last = db.Column(db.String(20), nullable=False)
-    user_email = db.Column(db.String(30), nullable=False)
+    user_email = db.Column(db.String(30), nullable=False, unique=True)
     user_password = db.Column(db.String(100), nullable=False)
     user_admin = db.Column(db.Boolean, default=False)
     user_activated = db.Column(db.Boolean, default=False)
@@ -33,6 +33,11 @@ class UserModel(db.Model):
     def find_username(cls, username: str) -> "UserModel":
         user = cls.query.filter_by(user_username=username).first()
         return user
+
+    @classmethod
+    def find_email(cls, email: str):
+        email = cls.query.filter_by(user_email=email).first()
+        return email
 
     def save_to_db(self):
         db.session.add(self)

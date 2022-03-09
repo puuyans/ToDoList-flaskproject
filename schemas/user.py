@@ -1,4 +1,11 @@
-from marshmallow import Schema, fields, validate, pre_load
+from marshmallow import Schema, fields, validate, pre_load, ValidationError
+import re
+
+
+def validate_email(email):
+    regex = '^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$'
+    if not re.search(regex, email):
+        raise ValidationError("Not a valid Email, please check!")
 
 
 class UserRegisterSchema(Schema):
@@ -10,7 +17,7 @@ class UserRegisterSchema(Schema):
     name = fields.Str(required=True, validate=validate.Length(min=3, max=20))
     last = fields.Str(required=True, validate=validate.Length(min=3, max=20))
     password = fields.Str(required=True, validate=validate.Length(min=3, max=20))
-    email = fields.Str(required=True, validate=validate.Length(min=5, max=30))
+    email = fields.Str(required=True, validate=validate.And(validate.Length(min=3, max=30), validate_email))
 
     # strip input data
     @pre_load(
@@ -23,6 +30,8 @@ class UserRegisterSchema(Schema):
             item["name"] = item["name"].strip()
         if "last" in item:
             item["last"] = item["last"].strip()
+        if "email" in item:
+            item["email"] = item["email"].strip()
         return item
 
 
@@ -35,7 +44,7 @@ class UserLoginSchema(Schema):
     username = fields.Str(required=True, validate=validate.Length(min=3, max=20))
 
     @pre_load
-    def strip_username(self,item, **kwargs):
+    def strip_username(self, item, **kwargs):
         if "username" in item:
             item["username"] = item["username"].strip()
         return item

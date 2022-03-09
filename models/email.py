@@ -2,9 +2,9 @@ from app import db
 from requests import Response, post
 from flask import request, url_for
 
-MAIL_API_KEY = "cc13652d29e25e5f6c81d95c06e90cd6-1b237f8b-304d32b4"
-FROM_EMAIL = "demo.blubal@outlook.com"
-MAILGUN = "https://api.mailgun.net/v3/sandboxb71563cd234f48b1b89bd28d2e456bde.mailgun.org/messages"
+MAIL_API_KEY = ****************
+FROM_EMAIL = ****************
+MAILGUN = *******************
 
 
 class EmailModel(db.Model):

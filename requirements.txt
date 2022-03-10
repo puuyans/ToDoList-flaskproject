@@ -1,7 +1,5 @@
 FLask~=2.0.2
-Flask-Restful
-Flask-jwt-extended
-Flask-SQLAlchemy
-uwsgi
 Werkzeug~=2.0.3
 marshmallow~=3.14.1
+SQLAlchemy~=1.4.31
+requests~=2.27.1

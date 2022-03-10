@@ -74,6 +74,7 @@ app.add_url_rule(
 
 app.add_url_rule(
     "/activate/<int:user_id>",
+    "activate",
     view_func=UserService.activate_user,
     methods=["PUT"],
 )

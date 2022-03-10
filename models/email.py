@@ -2,9 +2,9 @@ from app import db
 from requests import Response, post
 from flask import request, url_for
 
-MAIL_API_KEY = ****************
-FROM_EMAIL = ****************
-MAILGUN = *******************
+MAIL_API_KEY = "4faa4e607cf85ce40b724e88724704f5-1b237f8b-3c5f7a62"
+FROM_EMAIL = "sandbox55d3306fe6304c488c73a50d48091582.mailgun.org"
+MAILGUN = "https://api.mailgun.net/v3/sandbox55d3306fe6304c488c73a50d48091582.mailgun.org/messages"
 
 
 class EmailModel(db.Model):
@@ -31,7 +31,7 @@ class EmailModel(db.Model):
         email = cls._find_by_type(email_type="Confirmation")
         return post(MAILGUN,
                     auth=("api", MAIL_API_KEY),
-                    data={"from": f"{FROM_EMAIL} <{MAILGUN}>",
+                    data={"from": f"T0 D0 App! <mailgun@{FROM_EMAIL}>",
                           "to": user_email,
                           "subject": email.email_subject,
                           "text": email.email_body.format(link)})

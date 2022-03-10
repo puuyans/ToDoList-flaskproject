@@ -6,7 +6,6 @@ from models.email import EmailModel
 from werkzeug.security import check_password_hash
 from marshmallow import ValidationError, EXCLUDE
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
 from schemas.user import UserLoginSchema, UserRegisterSchema
 from flask_jwt_extended import (
     create_access_token,
@@ -30,8 +29,6 @@ DUPLICATE_EMAIL = "Email already exists, choose another email!"
 login_schema = UserLoginSchema(unknown=EXCLUDE)
 register_schema = UserRegisterSchema(unknown=EXCLUDE)
 
-
-session = Session()
 
 class UserService(MethodView):
     """
@@ -60,19 +57,15 @@ class UserService(MethodView):
         except ValidationError as err:
             return {"error": err.messages}, 400
 
+        # TODO r&d about rollback transition
         # inserting the new user data in db
         try:
-            session.begin()
             cls._create_user(data)
-            session.rollback()
-            # new_user = UserModel.find_username(data["username"])
-            # EmailModel.send_confirmation_email(new_user.user_id, new_user.user_email)
+            new_user = UserModel.find_username(data["username"])
+            EmailModel.send_confirmation_email(new_user.user_id, new_user.user_email)
             return {"msg": USER_CREATE_SUCCESSFUL}, 201
         except ConnectionError:
-            session.rollback()
             return {"msg": USER_CREATE_FAILED}, 400
-
-
 
     @classmethod
     def _duplicate_user(cls, request_username: str):

@@ -1,10 +1,12 @@
 from app import db
 from requests import Response, post
 from flask import request, url_for
-
-MAIL_API_KEY = "4faa4e607cf85ce40b724e88724704f5-1b237f8b-3c5f7a62"
-FROM_EMAIL = "sandbox55d3306fe6304c488c73a50d48091582.mailgun.org"
-MAILGUN = "https://api.mailgun.net/v3/sandbox55d3306fe6304c488c73a50d48091582.mailgun.org/messages"
+import os
+from dotenv import load_dotenv
+load_dotenv()
+MAIL_API_KEY = os.environ.get("MAIL_API_KEY")
+FROM_EMAIL = os.environ.get("FROM_EMAIL")
+MAILGUN = os.environ.get("MAILGUN")
 
 
 class EmailModel(db.Model):

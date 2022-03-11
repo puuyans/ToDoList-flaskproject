@@ -4,14 +4,16 @@ from flask_jwt_extended import JWTManager
 from resources.task import Task
 from resources.user import UserService
 from models.token_blocklist import TokenBlocklist
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
-
+load_dotenv()
 jwt = JWTManager(app)
 
-app.secret_key = "supersecretverydifficulttocrack"
+app.secret_key = os.environ.get("SECRET_KEY")
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydb.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["PROPAGATE_EXCEPTIONS"] = True
 app.config["JWT_BLACKLIST_ENABLED"] = True
